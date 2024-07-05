@@ -8,55 +8,44 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 @StepScope
-public class ApiReader implements ItemReader<List<JsonNode>> {
+public class ApiReader implements ItemReader<JsonNode> {
     private final String baseUrl = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
     private final String location = "London";
-    private final String apiKey = "DPS5SA9X3GE8DZ3YHEP8MWWNU";
+    private final String apiKey = "JN69GT5FUL5LLDTL6CGQGTR4W";
     private final int totalMonths = 12;
+
+    private final LocalDate startDate = LocalDate.of(2024, 7, 1); // Commencez le 1er JANVIER 2024
+    private final LocalDate endDate = startDate.plusMonths(1).minusDays(1); // Jusqu'à la fin de janvier 2024
 
     private int currentMonth = 0;
     private boolean batchJobState = false;
     private boolean isReadComplete = false;
 
 
-    private LocalDate currentStartDate = LocalDate.of(2024, 5, 1); // Commencez le 1er mai 2024
-    private final LocalDate endDate = currentStartDate.plusMonths(1); // Jusqu'à la fin de mai 2024
-
     @Override
-    public List<JsonNode> read() throws Exception {
+    public JsonNode read() throws Exception {
         if (isReadComplete) {
             return null;
         }
-        /*
-        if (currentStartDate.isAfter(endDate)) {
-            return null;
-        }*/
-        List<JsonNode> weatherDataList = new ArrayList<>();
 
-        while (currentStartDate.isBefore(endDate)) {
-            LocalDate currentEndDate = currentStartDate.plusDays(4);
-            if (currentEndDate.isAfter(endDate)) {
-                currentEndDate = endDate;
-            }
+        // Lire les données d'un mois entier
+        String rawResult = Main.timelineRequestHttpClient(baseUrl, location, startDate.toString(), endDate.toString(), apiKey);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode weatherData = objectMapper.readTree(rawResult);
 
-            String rawResult = Main.timelineRequestHttpClient(baseUrl, location, currentStartDate.toString(), currentEndDate.toString(), apiKey);
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode weatherData = objectMapper.readTree(rawResult);
+        isReadComplete = true;
 
-            currentStartDate = currentStartDate.plusDays(5);
-        }
-       /* if (currentMonth >= totalMonths) {
+        return weatherData;
+        /* ici if (currentMonth >= totalMonths) {
             return null;
         }
         /*
         if (batchJobState) {
             return null;
-        }/
+        }
 
         LocalDate startDate = LocalDate.of(2023, 1, 1).plusMonths(currentMonth);
         LocalDate endDate = startDate.plusMonths(1).minusDays(1);
@@ -66,10 +55,9 @@ public class ApiReader implements ItemReader<List<JsonNode>> {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode weatherData = objectMapper.readTree(rawResult);
 
-        currentMonth++;*/
-        isReadComplete = true;
+        currentMonth++;
 
         //batchJobState = true;
-        return weatherDataList;
+        return weatherData;ICI*/
     }
 }

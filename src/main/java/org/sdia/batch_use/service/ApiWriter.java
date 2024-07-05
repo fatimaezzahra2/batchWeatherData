@@ -21,14 +21,14 @@ import java.util.Map;
 //@AllArgsConstructor
 @StepScope
 
-public class ApiWriter implements ItemWriter<List<JsonNode>> {
+public class ApiWriter implements ItemWriter<JsonNode> {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    //private String projectId="test";
-    private int documentId = 1; // Start with 1 and increment for each write
+    private String projectId="test";
+    private int documentId = 7; // Start with 1 and increment for each write
 
 
     @Override
-    public void write(Chunk<? extends List<JsonNode>> chunk) throws Exception {
+    public void write(Chunk<? extends JsonNode> chunk) throws Exception {
 
         Firestore db = FirestoreClient.getFirestore();
         System.out.println("writer chunk is : "+ chunk);
@@ -48,10 +48,8 @@ public class ApiWriter implements ItemWriter<List<JsonNode>> {
 
         // int count=0;
 
-        for (List<JsonNode> itemList : chunk.getItems()) {
-            System.out.println("---------------------------");
-            for (JsonNode item : itemList) {
-                System.out.println("item: "+item);
+        for (JsonNode item : chunk.getItems()) {
+            System.out.println("item: "+item);
             try {
                 // ... (Your data conversion and writing logic) ...
                 //  System.out.println("writer chunk is : "+ chunk);
@@ -74,12 +72,19 @@ System.out.println("first element: "+firstElement);
                 ApiFuture<List<WriteResult>> future = batch.commit();*/
                 // Convertir l'élément JSON en une carte (Map) compatible avec Firestore
                 Map<String, Object> map = objectMapper.convertValue(item, Map.class);
-                DocumentReference docRef = db.collection("project_id").document(String.valueOf(documentId));
+                DocumentReference docRef = db.collection("weather").document(String.valueOf(documentId));
                 WriteBatch batch = db.batch();
                 batch.set(docRef, map);
                 ApiFuture<List<WriteResult>> future = batch.commit();
-                documentId++; // Increment the document ID for the next write
 
+                List<WriteResult> writeResults = future.get();
+
+                // Log successful write
+                for (WriteResult result : writeResults) {
+                    System.out.println("Document written at: " + result.getUpdateTime());
+                }
+
+                documentId++;
 /*
 
                 count++;
@@ -97,7 +102,6 @@ System.out.println("first element: "+firstElement);
                 // Log or handle the exception appropriately
                 e.printStackTrace();
             }
-        }
         }
 
     }

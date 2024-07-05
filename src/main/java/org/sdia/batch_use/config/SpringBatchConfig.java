@@ -39,7 +39,7 @@ public class SpringBatchConfig {
     @Bean
     public Step stepApi(){
         return new StepBuilder("step_API", jobRepository)
-                .<List<JsonNode>, List<JsonNode>>chunk(1,platformTransactionManager)
+                .<JsonNode, JsonNode>chunk(1,platformTransactionManager)
                 .reader(apiReader)
                 // .processor(apiProcessor)
                 .writer(apiWriter)
