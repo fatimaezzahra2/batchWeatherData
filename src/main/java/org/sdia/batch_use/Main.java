@@ -13,6 +13,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 //ce commentaire est fait le : 05/07/2024
+//c un nv comment
 public class Main {
     public static String timelineRequestHttpClient(String apiEndPoint, String location, String startDate, String endDate, String apiKey) throws Exception {
       /*  String apiEndPoint = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
